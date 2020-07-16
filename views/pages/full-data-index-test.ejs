@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include ../partials/head %>
+  </head>
+
+  <body class="container">
+    <header></header>
+
+    <main>
+      <div id="map"></div>
+    </main>
+
+    <footer>
+      <% include ../partials/footer %>
+    </footer>
+
+    <script>
+      console.log( <%- JSON.stringify(data) %>)
+    </script>
+  </body>
+</html>

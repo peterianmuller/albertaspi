@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include ../partials/head %>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item active" id="map-link-container">
+            <a id="map-link" class="nav-link" href="">Map</a>
+          </li>
+
+          <li class="nav-item" id="compare-link-container">
+            <a id="compare-link" class="nav-link" href="">Compare</a>
+          </li>
+
+          <li class="nav-item" id="about-link-container">
+            <a class="nav-link" href="">About</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <main>
+      <div id="map"></div>
+      <div id="tree-wrapper">
+        <h4>Alberta, Canada</h4>
+        <div id="spi-tree"></div>
+      </div>
+      <div id="table" class="hidden">
+        <table id="example" class="display" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Social Progress Index</th>
+              <th>Name</th>
+              <th>Income</th>
+              <th>Basic Human Needs</th>
+              <th>Foundations of Wellbeing</th>
+              <th>Opportunity</th>
+            </tr>
+          </thead>
+          <tbody id="compare-body"></tbody>
+          <tfoot>
+            <tr>
+              <th>Name</th>
+              <th>Position</th>
+              <th>Office</th>
+              <th>Age</th>
+              <th>Start date</th>
+              <th>Salary</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div id="about" class="hidden">
+        <p><strong>Social Progress Index</strong></p>
+        <p></p>
+        <table class="table" id="about-table">
+          <thead>
+            <tr>
+              <th scope="col">Dimension</th>
+              <th scope="col">Component</th>
+              <th scope="col">Aspect</th>
+              <th scope="col">Source</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+
+    <footer>
+      <% include ../partials/footer %>
+    </footer>
+
+    <div id="target"></div>
+
+    <!-- grid -->
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="scorecard-header">
+              <div class="scorecard-header-name">
+                <h1>Alberta, CA</h1>
+                <h2>Zone <span></span></h2>
+              </div>
+              <div class="scorecard-dimension spi-mhi">
+                <div class="scorecard-dimension-header header-categories">
+                  <span
+                    class="scorecard-dimension-header-label header-score-value score-value-top-header mxy30"
+                    >score/ value</span
+                  >
+                  <span class="scorecard-dimension-header-label">rank</span>
+                </div>
+                <div
+                  class="scorecard-dimension-values detail-data dimension-header spi-header"
+                >
+                  <span class="scorecard-dimension-value-name detail-data-label"
+                    >Social Progress Index</span
+                  >
+                  <span
+                    class="scorecard-dimension-value data-measure spi-score mxy30"
+                  ></span>
+                  <span
+                    class="scorecard-dimension-value data-measure spi-rank"
+                  ></span>
+                </div>
+                <div
+                  class="scorecard-dimension-values detail-data dimension-header mhi-header"
+                >
+                  <span class="scorecard-dimension-value-name detail-data-label"
+                    >Median Household Income</span
+                  >
+                  <span
+                    class="scorecard-dimension-value data-measure geography-score mxy30"
+                  ></span>
+                  <span
+                    class="scorecard-dimension-value data-measure geography-rank"
+                  ></span>
+                </div>
+                <div
+                  class="scorecard-dimension-values detail-data dimension-header spi-measure-header"
+                >
+                  <span
+                    class="scorecard-dimension-value data-measure spi-measure-container"
+                    ><svg height="45" width="45">
+                      <circle
+                        cx="20"
+                        cy="20"
+                        r="15"
+                        stroke="#ffe479"
+                        stroke-width="5"
+                        fill="#ffe479"
+                      ></circle>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+              <div class="spi-info-text">
+                <p>
+                  The scorecard highlights a tracts' relative strengths and
+                  relative weaknesses compared to 15 peer tracts with a similar
+                  median household income. Elements of the Social Progress Index
+                  are marked with a blue dot where the tract performs
+                  comparatively well, a red dot where it performs relatively
+                  poorly, a yellow dot where its performance is average for its
+                  peer group, and a gray dot when there isn't sufficient data to
+                  make a judgment. Elements marked with a blue ring are areas
+                  where the tract slightly over-performs while areas where the
+                  tract slightly under-performs are marked with a red ring.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-body scorecard-grid">
+              <div class="bhn-header">
+                <div class="scorecard-dimension-header">
+                  <span class="scorecard-dimension-header-label"
+                    >score/ value</span
+                  >
+                  <span class="scorecard-dimension-header-label">rank</span>
+                  <span class="scorecard-dimension-header-label"
+                    >strength/ weakness</span
+                  >
+                </div>
+                <div
+                  class="scorecard-dimension-values detail-data dimension-header header-container-BHN"
+                  data-aspect="Basic Human Needs"
+                >
+                  <span
+                    class="scorecard-dimension-value-name detail-data-label scorecard-label-BHN"
+                    >Basic Human Needs</span
+                  >
+                  <span
+                    class="detail--data-score detail--score-card-dimension-value"
+                    >96.89</span
+                  >
+                  <span class="scorecard-dimension-value data-measure">6</span>
+                  <span class="scorecard-dimension-value data-measure">
+                    <svg height="26" width="26">
+                      <circle
+                        cx="13"
+                        cy="13"
+                        r="7"
+                        stroke="#8c8c8c"
+                        stroke-width="5"
+                        fill="#8c8c8c"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+              <div class="fow-header">
+                <div class="scorecard-dimension-header">
+                  <span class="scorecard-dimension-header-label"
+                    >score/ value</span
+                  >
+                  <span class="scorecard-dimension-header-label">rank</span>
+                  <span class="scorecard-dimension-header-label"
+                    >strength/ weakness</span
+                  >
+                </div>
+                <div
+                  class="scorecard-dimension-values detail-data dimension-header header-container-FWB"
+                  data-aspect="Foundations of Wellbeing"
+                >
+                  <span
+                    class="scorecard-dimension-value-name detail-data-label scorecard-label-FWB"
+                    >Foundations of Wellbeing</span
+                  >
+                  <span
+                    class="detail--data-score detail--score-card-dimension-value"
+                    >96.89</span
+                  >
+                  <span class="scorecard-dimension-value data-measure">6</span>
+                  <span class="scorecard-dimension-value data-measure">
+                    <svg height="26" width="26">
+                      <circle
+                        cx="13"
+                        cy="13"
+                        r="7"
+                        stroke="#8c8c8c"
+                        stroke-width="5"
+                        fill="#8c8c8c"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <div class="opp-header">
+                <div class="scorecard-dimension-header">
+                  <span class="scorecard-dimension-header-label"
+                    >score/ value</span
+                  >
+                  <span class="scorecard-dimension-header-label">rank</span>
+                  <span class="scorecard-dimension-header-label"
+                    >strength/ weakness</span
+                  >
+                </div>
+                <div
+                  class="scorecard-dimension-values detail-data dimension-header header-container-OPP"
+                  data-aspect="Opportunity"
+                >
+                  <span
+                    class="scorecard-dimension-value-name detail-data-label scorecard-label-OPP"
+                    >Opportunity</span
+                  >
+                  <span
+                    class="detail--data-score detail--score-card-dimension-value"
+                    >96.89</span
+                  >
+                  <span class="scorecard-dimension-value data-measure">6</span>
+                  <span class="scorecard-dimension-value data-measure">
+                    <svg height="26" width="26">
+                      <circle
+                        cx="13"
+                        cy="13"
+                        r="7"
+                        stroke="#8c8c8c"
+                        stroke-width="5"
+                        fill="#8c8c8c"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+              <ul
+                class="detail-scorecard-component bhn-aspect"
+                data-aspect="Nutrition and Basic Medical Care"
+              ></ul>
+              <ul
+                class="detail-scorecard-component bhn-aspect"
+                data-aspect="Water and Sanitation"
+              ></ul>
+              <ul
+                class="detail-scorecard-component bhn-aspect"
+                data-aspect="Shelter"
+              ></ul>
+              <ul
+                class="detail-scorecard-component bhn-aspect"
+                data-aspect="Personal Safety"
+              ></ul>
+              <ul
+                class="detail-scorecard-component fob-aspect fob-aspect-1"
+                data-aspect="Access to Basic Knowledge"
+              ></ul>
+              <ul
+                class="detail-scorecard-component fob-aspect fob-aspect-2"
+                data-aspect="Access to Information and Communications"
+              ></ul>
+              <ul
+                class="detail-scorecard-component fob-aspect fob-aspect-3"
+                data-aspect="Health and Wellness"
+              ></ul>
+              <ul
+                class="detail-scorecard-component fob-aspect fob-aspect-4"
+                data-aspect="Environmental Quality"
+              ></ul>
+              <ul
+                class="detail-scorecard-component opp-aspect opp-aspect-1"
+                data-aspect="Personal Rights"
+              ></ul>
+              <ul
+                class="detail-scorecard-component opp-aspect opp-aspect-2"
+                data-aspect="Personal Freedom and Choice"
+              ></ul>
+              <ul
+                class="detail-scorecard-component opp-aspect opp-aspect-3"
+                data-aspect="Inclusiveness"
+              ></ul>
+              <ul
+                class="detail-scorecard-component opp-aspect opp-aspect-4"
+                data-aspect="Access to Advanced Education"
+              ></ul>
+
+              <!-- this is whre I need to put each component div -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% include ../partials/scripts %>
+  </body>
+</html>

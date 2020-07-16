@@ -1,0 +1,446 @@
+<!-- meta -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- title -->
+<title>Subnational SPI Map</title>
+
+<!-- CSS -->
+<link
+  href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+  rel="stylesheet"
+  integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+  crossorigin="anonymous"
+/>
+<!-- <link
+  href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+  crossorigin="anonymous"
+/> -->
+<link
+  rel="stylesheet"
+  href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+  integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+  crossorigin="anonymous"
+/>
+
+<link
+  href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"
+/>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/jstree-bootstrap-theme@1.0.1/dist/themes/proton/style.min.css"
+/>
+
+<!-- data tables -->
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css"
+/>
+
+<link rel="icon" src="../../favicon.ico" sizes="16x16" />
+
+<!-- style -->
+<style>
+  body,
+  html {
+    /* padding-top: 50px; */
+    height: 100%;
+  }
+
+  main {
+    display: flex;
+    width: 100%;
+  }
+
+  .show-button {
+    border: 1px solid grey;
+  }
+
+  #map {
+    height: 100vh;
+    width: 1061px;
+    /* flex: 3; */
+    /* z-index: 0; */
+  }
+
+  a.jstree-anchor {
+    /*enable wrapping*/
+    white-space: normal !important;
+    /*ensure lower nodes move down*/
+    height: auto !important;
+    /*offset icon width*/
+    padding-right: 1%;
+  }
+
+  #tree-wrapper {
+    padding: 1rem;
+    width: 320px;
+    overflow-y: scroll;
+    overflow-x: scroll;
+    height: 100vh;
+  }
+
+  #spi-tree {
+    transition: none;
+    max-width: 95%;
+    padding-top: 10px;
+    flex: 1;
+    /* min-width: 326px; */
+    /* width: 300px; */
+    transition: none;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  #table {
+    flex: 1;
+    padding: 10px;
+  }
+
+  #about {
+    padding: 10px;
+  }
+
+  .legend {
+    text-align: left;
+    line-height: 18px;
+    color: #555;
+  }
+  .legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+  }
+
+  .scorecard-dimension.spi-mhi {
+    flex-basis: 50%;
+    display: grid;
+    grid-template-columns: 75% 25%;
+    grid-auto-rows: 25% 25% 25%;
+    grid-gap: 5px;
+  }
+
+  .spi-measure-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  .score-value-top-header {
+    width: inherit;
+  }
+
+  .scorecard-dimension.spi-mhi.header-categories {
+    grid-column-start: 1;
+  }
+
+  .scorecard-dimension.spi-mhi
+    .scorecard-dimension-values.detail-data.dimension-header.spi-header {
+    grid-row-start: 2;
+  }
+
+  .scorecard-dimension.spi-mhi
+    .scorecard-dimension-values.detail-data.dimension-header.mhi-header {
+    grid-row-start: 3;
+  }
+
+  .spi-measure-header {
+    grid-area: 1 / 2 / 4 / 4;
+    justify-self: center;
+  }
+
+  strong.legend-aspect-name {
+    display: inline-block;
+    margin-bottom: 10px;
+    text-align: center;
+    line-height: 10px;
+  }
+  body {
+    overflow: hidden;
+    /* overflow: scroll; */
+  }
+
+  .info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+  }
+
+  .info h4 {
+    margin: 0 0 5px;
+    color: #777;
+  }
+
+  /* map shapes */
+  path.leaflet-interactive {
+    stroke: "orange";
+    stroke-opacity: 1;
+    stroke-width: 1;
+    stroke-linecap: "round";
+    stroke-linejoin: "round";
+  }
+  /* scorecard */
+
+  .scorecard {
+    display: flex;
+    flex-wrap: wrap;
+    background: #f7f7f5;
+    justify-content: space-between;
+  }
+
+  .scorecard-dimension-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 0;
+  }
+
+  .scorecard-dimension-header span:first-of-type {
+    width: 30px;
+  }
+  .scorecard-dimension-header span:first-of-type.header-score-value {
+    width: inherit;
+  }
+
+  .scorecard-dimension-header-label {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.1;
+    text-align: center;
+    color: #0c7984;
+    width: 55px;
+  }
+
+  .scorecard-detail {
+    flex: 1;
+    flex: 32.5% 0 0;
+  }
+
+  div.spi-info-text {
+    flex-basis: 100%;
+  }
+
+  .scorecard-header {
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+
+  .bhn-header > div,
+  .fow-header > div,
+  .opp-header > div {
+    margin-bottom: 10px;
+  }
+
+  ul.detail-scorecard-component {
+    /* height: 290px; */
+    /* padding: 0; */
+    /* margin: 10px 0; */
+    background: #f7f7f5;
+    list-style: none;
+  }
+
+  .detail-data {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    line-height: 2;
+    align-items: flex-start;
+  }
+
+  .detail-data-indicator {
+    font-size: 0.9rem;
+  }
+
+  .detail-data-label {
+    margin-right: auto;
+    padding-right: 10px;
+  }
+
+  .modal-content {
+    background: #f7f7f5;
+  }
+
+  .data-ranking,
+  .data-measure {
+    min-width: 55px;
+    text-align: center;
+  }
+
+  .data-measure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .data-ranking {
+    margin-right: 8px;
+  }
+
+  .scorecard-label-BHN {
+    color: #00ccd7;
+  }
+
+  .header-container-BHN {
+    border-bottom: 4px solid rgb(0, 204, 215);
+  }
+
+  .scorecard-label-FWB {
+    color: rgb(251, 147, 82);
+  }
+
+  .header-container-FWB {
+    border-bottom: 4px solid rgb(251, 147, 82);
+  }
+
+  .scorecard-label-OPP {
+    color: rgb(153, 192, 112);
+  }
+
+  .header-container-OPP {
+    border-bottom: 4px solid rgb(153, 192, 112);
+  }
+
+  .modal.fade.show {
+    padding-left: 0;
+  }
+
+  ul.detail-scorecard-component li:first-of-type,
+  .dimension-header {
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  /* scorecard-grid */
+
+  .scorecard-grid {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    grid-template-rows: auto auto auto;
+  }
+
+  .bhn-aspect {
+    grid-column-start: 1;
+    grid-column-end: 1;
+  }
+
+  .fob-aspect {
+    grid-column-start: 2;
+  }
+
+  .fob-aspect-1 {
+    grid-row-start: 2;
+  }
+  .fob-aspect-2 {
+    grid-row-start: 3;
+  }
+  .fob-aspect-3 {
+    grid-row-start: 4;
+  }
+  .fob-aspect-4 {
+    grid-row-start: 5;
+  }
+
+  .opp-aspect {
+    grid-column-start: 3;
+  }
+
+  .opp-aspect-1 {
+    grid-row-start: 2;
+  }
+  .opp-aspect-2 {
+    grid-row-start: 3;
+  }
+  .opp-aspect-3 {
+    grid-row-start: 4;
+  }
+  .opp-aspect-4 {
+    grid-row-start: 5;
+  }
+
+  .scorecard-grid > * {
+    padding: 10px;
+  }
+
+  /* map legend */
+
+  .legend-container {
+    display: flex;
+  }
+
+  .legend-container > * {
+    flex: 1;
+  }
+
+  .legend-container > i {
+    max-width: 18px;
+  }
+
+  /* utility */
+  .mxy30 {
+    margin: 0 30px;
+  }
+
+  @media (min-width: 576px) {
+    .modal-dialog {
+      width: 98%;
+      max-width: 98%;
+    }
+  }
+
+  div#exampleModal {
+    padding: 0 15px !important;
+  }
+
+  @media (max-width: 1100px) {
+    .fob-aspect-1,
+    .fob-aspect-2,
+    .fob-aspect-3,
+    .fob-aspect-4,
+    .opp-aspect-1,
+    .opp-aspect-2,
+    .opp-aspect-3,
+    .opp-aspect-4 {
+      grid-row-start: initial;
+      grid-column-start: initial;
+    }
+
+    .fow-header {
+      grid-row-start: 6;
+    }
+    .opp-header {
+      grid-row-start: 11;
+    }
+
+    .scorecard-grid > * {
+      /* flex-wrap: wrap; */
+      grid-column-start: 1;
+      grid-column-end: 4;
+    }
+    .scorecard-detail {
+      /* flex-basis: 100%; */
+    }
+    .scorecard-dimension.spi-mhi {
+      flex-basis: 100%;
+    }
+  }
+</style>

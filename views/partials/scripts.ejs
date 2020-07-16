@@ -1,0 +1,1759 @@
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+  integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+  integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+  integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.9/jstree.min.js"></script>
+<!-- d3 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js"></script>
+<!-- data tables for compare -->
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+
+<script>
+  let geoJSON = <%- JSON.stringify(coords) %> ;
+  let geography = <%- JSON.stringify(geography) %> ;
+  let spi = <%- JSON.stringify(spi) %> ;
+  let myLines2 = geoJSON.features;
+  let aspectsFromServer = <%- JSON.stringify(spiAspects) %> ;
+  console.log(myLines2);
+
+  // based on the above pieces of data I need to create a DYNAMIC hierarchy
+
+
+  var dynamicHierarchy = {
+    "Social Progress Index": [],
+    "aspects": [{
+      "Basic Human Needs": [],
+      "aspects": [{
+        "Nutrition and Basic Medical Care": [],
+        "aspects": []
+      },
+      {
+        "Water and Sanitation": [],
+        "aspects": []
+      },
+      {
+        "Shelter": [],
+        "aspects": []
+      },
+      {
+        "Personal Safety": [],
+        "aspects": []
+      }
+      ]
+    },
+    {
+      "Foundations of Wellbeing": [],
+      "aspects": [{
+        "Health and Wellness": [],
+        "aspects": []
+      },
+      {
+        "Access to Basic Knowledge": [],
+        "aspects": []
+      },
+      {
+        "Access to Information and Communications": [],
+        "aspects": []
+      },
+      {
+        "Environmental Quality": [],
+        "aspects": []
+      }
+      ]
+    },
+    {
+      "Opportunity": [],
+      "aspects": [{
+        "Personal Rights": [],
+        "aspects": []
+      },
+      {
+        "Personal Freedom and Choice": [],
+        "aspects": []
+      },
+      {
+        "Inclusiveness": [],
+        "aspects": []
+      },
+      {
+        "Access to Advanced Education": [],
+        "aspects": []
+      }
+      ]
+    }
+    ]
+  };
+
+  let dynamicTree = {
+    'text': "Social Progress Index",
+    'state': {
+      'opened': true,
+      'selected': true
+    },
+    'children': [{
+      'text': "Basic Human Needs",
+      'state': {
+        'opened': true,
+        'selected': false
+      },
+      'children': [{
+        'text': "Nutrition and Basic Medical Care",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': []
+      },
+      {
+        'text': "Water and Sanitation",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      {
+        'text': "Shelter",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': []
+      },
+      {
+        'text': "Personal Safety",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': []
+      },
+      ]
+    },
+    {
+      'text': "Foundations of Wellbeing",
+      'state': {
+        'opened': true,
+        'selected': false
+      },
+      'children': [{
+        'text': "Health and Wellness",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      {
+        'text': "Access to Basic Knowledge",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': []
+      },
+      {
+        'text': "Access to Information and Communications",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      {
+        'text': "Environmental Quality",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      ]
+
+    },
+    {
+      'text': "Opportunity",
+      'state': {
+        'opened': true,
+        'selected': false
+      },
+      'children': [{
+        'text': "Personal Rights",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      {
+        'text': "Personal Freedom and Choice",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      {
+        'text': "Inclusiveness",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      {
+        'text': "Access to Advanced Education",
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'children': [
+
+        ]
+      },
+      ]
+    },
+    ]
+  }
+
+  aspectsFromServer.records.forEach(aspect => {
+    // also add to tree
+    var node = {
+      'text': aspect[3],
+      'state': {
+        'opened': true,
+        'selected': false
+      }
+    };
+
+
+
+
+    // need to add aspects to each dimension
+    if (aspect[2] === "Nutrition and Basic Medical Care") {
+      dynamicHierarchy.aspects[0].aspects[0].aspects.push(aspect);
+      dynamicTree.children[0].children[0].children.push(node);
+    } else if (aspect[2] === "Water and Sanitation") {
+      dynamicHierarchy.aspects[0].aspects[1].aspects.push(aspect);
+      dynamicTree.children[0].children[1].children.push(node);
+    } else if (aspect[2] === "Shelter") {
+      dynamicHierarchy.aspects[0].aspects[2].aspects.push(aspect);
+      dynamicTree.children[0].children[2].children.push(node);
+    } else if (aspect[2] === "Personal Safety") {
+      dynamicHierarchy.aspects[0].aspects[3].aspects.push(aspect);
+      dynamicTree.children[0].children[3].children.push(node);
+    }
+
+
+    if (aspect[2] === "Health and Wellness") {
+      dynamicHierarchy.aspects[1].aspects[0].aspects.push(aspect);
+      dynamicTree.children[1].children[0].children.push(node);
+    } else if (aspect[2] === "Access to Basic Knowledge") {
+      dynamicHierarchy.aspects[1].aspects[1].aspects.push(aspect);
+      dynamicTree.children[1].children[1].children.push(node);
+    } else if (aspect[2] === "Access to Information and Communications") {
+      dynamicHierarchy.aspects[1].aspects[2].aspects.push(aspect);
+      dynamicTree.children[1].children[2].children.push(node);
+    } else if (aspect[2] === "Environmental Quality") {
+      dynamicHierarchy.aspects[1].aspects[3].aspects.push(aspect);
+      dynamicTree.children[1].children[3].children.push(node);
+    }
+
+    if (aspect[2] === "Personal Rights") {
+      dynamicHierarchy.aspects[2].aspects[0].aspects.push(aspect);
+      dynamicTree.children[2].children[0].children.push(node);
+    } else if (aspect[2] === "Personal Freedom and Choice") {
+      dynamicHierarchy.aspects[2].aspects[1].aspects.push(aspect);
+      dynamicTree.children[2].children[1].children.push(node);
+    } else if (aspect[2] === "Inclusiveness") {
+      dynamicHierarchy.aspects[2].aspects[2].aspects.push(aspect);
+      dynamicTree.children[2].children[2].children.push(node);
+    } else if (aspect[2] === "Access to Advanced Education") {
+      dynamicHierarchy.aspects[2].aspects[3].aspects.push(aspect);
+      dynamicTree.children[2].children[3].children.push(node);
+    }
+  });
+
+  console.log(dynamicHierarchy);
+
+
+  function styleIncome(string) {
+    if (typeof string !== 'string') string = string.toString();
+    let incomeString = '$';
+    for (let i = 0; i < string.length; i++) {
+      if ((string.length - i) % 3 === 0 && i > 0 && i < string.length - 2) {
+        incomeString += ',';
+      }
+      incomeString += string[i];
+    }
+    return incomeString;
+  };
+
+
+  const reducer = (accumulator, currentValue) => {
+    accumulator.add(currentValue[1]);
+    return accumulator;
+  }
+
+  let tractsSet = spi.records.reduce(reducer, new Set());
+  let totalTracts = tractsSet.size;
+
+
+
+
+
+
+  // create hashmap for geography with key as geoid prop as ar
+  // then add this array to the options property of each feature
+  // then print to scorecard
+
+  let geographyHashMap = geography.records.reduce((acc, curr) => {
+    acc[curr[1]] = curr;
+    return acc;
+  }, {});
+
+
+
+
+
+
+
+  function createLineBreaksForLegend(aspectName) {
+    let markup = '';
+    let words = aspectName.split(' ');
+    words.forEach(function (word) {
+      markup += `<br>${word}</br>`
+    });
+    return markup;
+  }
+
+  var map = L.map("map").setView([55.000000, -115.000000], 5);
+
+  var Esri_WorldGrayCanvas = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+  }).addTo(map);
+
+
+  var myStyle = {
+    "color": "#fff",
+    "opacity": 0.4,
+    "width": 0.1,
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "fillOpacity": 0.5
+  };
+
+
+  let hierarchy = {
+    "Social Progress Index": [],
+    "aspects": [{
+      "Basic Human Needs": [],
+      "aspects": [{
+        "Nutrition and Basic Medical Care": [],
+        "aspects": []
+      },
+      {
+        "Water and Sanitation": [],
+        "aspects": []
+      },
+      {
+        "Shelter": [],
+        "aspects": []
+      },
+      {
+        "Personal Safety": [],
+        "aspects": []
+      }
+      ]
+    },
+    {
+      "Foundations of Wellbeing": [],
+      "aspects": [{
+        "Health and Wellness": [],
+        "aspects": []
+      },
+      {
+        "Access to Basic Knowledge": [],
+        "aspects": []
+      },
+      {
+        "Access to Information and Communications": [],
+        "aspects": []
+      },
+      {
+        "Environmental Quality": [],
+        "aspects": []
+      }
+      ]
+    },
+    {
+      "Opportunity": [],
+      "aspects": [{
+        "Personal Rights": [],
+        "aspects": []
+      },
+      {
+        "Personal Freedom and Choice": [],
+        "aspects": []
+      },
+      {
+        "Inclusiveness": [],
+        "aspects": []
+      },
+      {
+        "Access to Advanced Education": [],
+        "aspects": []
+      }
+      ]
+    }
+    ]
+  };
+
+
+  // iterate over all spi and populate tree
+  // idea to create the tree
+  $(function () {
+    $('#spi-tree').jstree({
+      'core': {
+        'data': dynamicTree,
+        'themes': {
+          'name': 'proton',
+          'responsive': true,
+          'icons': false,
+          'dots': false
+        }
+      },
+    })
+  });
+
+  let shapes = [];
+
+
+  function getColor(d, max, min) {
+    let sequentialScale = d3.scaleSequential()
+      .domain([0, 10])
+      .interpolator(d3.interpolateMagma);
+
+    return d > 90 ? sequentialScale(9) :
+      d > 80 ? sequentialScale(8) :
+        d > 70 ? sequentialScale(7) :
+          d > 60 ? sequentialScale(6) :
+            d > 50 ? sequentialScale(5) :
+              d > 40 ? sequentialScale(4) :
+                d > 30 ? sequentialScale(3) :
+                  d > 20 ? sequentialScale(2) :
+                    d > 10 ? sequentialScale(1) :
+                      sequentialScale(0)
+  }
+
+
+  $('#spi-tree')
+    // listen for event
+
+    .on('changed.jstree', function (e, data) {
+      let aspectName;
+      if (data.action === "select_node") {
+        aspectName = data.node.text;
+
+        let min = {
+          rank: -Infinity,
+          value: 0
+        };
+        let max = {
+          rank: Infinity,
+          value: 0
+        };
+        shapes.forEach(shape => {
+          shape.bindTooltip(
+            `Census Tract: ${shape.options["SZONE_NAME"]} <br> ${data.node.text}: ${shape.options[data.node.text] ? shape.options[data.node.text][3] : 'no data'}`
+          );
+
+          if (shape.options[data.node.text] !== undefined) {
+            if (shape.options[data.node.text][4] > min.rank) {
+              min.rank = shape.options[data.node.text][4];
+              min.value = shape.options[data.node.text][3];
+            }
+            if (shape.options[data.node.text][4] < max.rank) {
+              max.rank = shape.options[data.node.text][4];
+              max.value = shape.options[data.node.text][3];
+            }
+          }
+        });
+
+        // need to deal with very small increments for min and max. For covid example, dustin just added to the range. Maybe I add some points here to the min and max
+
+        let minLessThanMax = min.value < max.value;
+
+        let scaleAspect = d3.scaleLinear()
+          .domain([Math.round(min.value), Math.round(max.value)])
+          .range(["red", "blue"]);
+        let scaleReverseAspect = d3.scaleLinear()
+          .domain([Math.round(max.value), Math.round(min.value)])
+          .range(["red", "blue"]);
+
+        shapes.forEach(shape => {
+          shape.bindTooltip(
+            `Census Tract: ${shape.options["SZONE_NAME"]} <br> ${data.node.text}: ${shape.options[data.node.text] ? shape.options[data.node.text][3] : 'no data'}`
+          );
+          let color = shape.options[data.node.text] ? scaleAspect(shape.options[data.node.text][3]) : 'grey';
+          let style = shape.options.style;
+          style.fillColor = color;
+          shape.setStyle(style);
+        })
+        // remove legend
+        $('.info.legend.leaflet-control').remove();
+
+        // create new legend
+        let legend = L.control({
+          position: 'topleft'
+        });
+        legend.onAdd = function (map) {
+
+          // range defining color scale itself
+          // domain is htei noput, what can we feed into the color scale
+
+
+          let div = L.DomUtil.create('div', 'info legend');
+          // get interval and increment by interal in for loop
+          // start at min and get to max
+          // if max is less than min figure it out
+          div.innerHTML += `<strong class="legend-aspect-name">${createLineBreaksForLegend(aspectName)}</strong>`;
+
+          // if min is greater than max
+          let minLessThanMax = min.value < max.value;
+          // find absolute value of difference between min and max
+          // for small intervals, we need to show decimal points on legend itself
+          // but we'll need to cut the decimal points to two points or so
+          let smallRange = Math.abs(max.value - min.value) < 5;
+          let start = Math.floor(min.value);
+          let end = Math.floor(max.value);
+          let interval = Math.floor(Math.abs((start - end) / 6));
+          // if there's a small range I want to include decimal points up to two places
+          if (smallRange) {
+            start = Number(decimalPoints(min.value));
+            end = Number(decimalPoints(max.value));
+            interval = Number(decimalPoints(Math.abs((start - end) / 6)));
+          }
+
+          // interval = minLessThanMax ? -interval : interval
+          // do the for loop but switch min and max and subtract interval
+
+          // write function to chck if small range include decimal points to two points
+
+          function decimalPoints(num) {
+            return smallRange ? num.toFixed(2) : num;
+          }
+
+
+          if (minLessThanMax) {
+            // loop through our density intervals and generate a label with a colored square for each interval
+            for (var i = start; i < end; i += interval) {
+              div.innerHTML += '<div class="legend-container">' +
+                '<i style="background:' + scaleAspect(i) + '"></i>  ' +
+                decimalPoints(i) + '<br>' + '</div>';
+            }
+          } else {
+            for (var i = start; i > end; i -= interval) {
+              div.innerHTML += '<div class="legend-container">' +
+                '<i style="background:' + scaleAspect(i) + '"></i>  ' +
+                decimalPoints(i) + '<br>' + '</div>';
+            }
+          }
+          return div;
+        }
+
+        legend.addTo(map);
+
+
+      }
+    });
+
+  // add all SPI properties to feature
+
+  let addProperties = (geoid, options) => {
+    let spiPerTract = spi.records.filter(spiData => {
+      
+      return geoid === spiData[1];
+    });
+    spiPerTract.forEach(aspect => {
+      options[aspect[2]] = aspect;
+    });
+  }
+
+  function highlightFeature(e) {
+    var layer = e.target;
+    var style = e.target.options.style;
+    style.fillOpacity = 0.7;
+
+    layer.setStyle(style);
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+      layer.bringToFront();
+    }
+  }
+
+  // update
+
+  myLines2.forEach(feature => {
+    // grab the population data
+    var tooltipPopup;
+    var options = {
+      style: myStyle,
+      geoid: feature.properties.geoid,
+      name: feature.properties["SZONE_NAME"],
+      geographyData: geographyHashMap[feature.properties.geoid]
+    };
+    
+    addProperties(feature.properties.geoid, options);
+   
+    myStyle.fillColor = options["Social Progress Index"] ? getColor(options["Social Progress Index"][3]) : "grey";
+    var shape = L.geoJSON(feature.geometry, options);
+    // on tooltip put geographical info
+    shape.bindTooltip(
+      `Census Tract: ${shape.options["SZONE_NAME"]} <br> ${"Social Progress Index"}: ${shape.options["Social Progress Index"] ? shape.options["Social Progress Index"][3] : 'no data'}`
+    )
+      // .bindPopup(`Census Tract: ${feature.properties.name}`)
+      .addTo(map);
+    shapes.push(shape);
+    shape.on('mouseover', function (e) {
+      this.openTooltip()
+      // highlightFeature(e);
+    })
+    shape.on('mouseout', function (e) {
+      this.closeTooltip()
+    });
+
+
+    // show scorecard table until after the tree view is created
+    shape.on('click', function (e) {
+
+      // show scorecard. Here we should tell scorecard "hey render the SPI data for this geoid"
+      // render scorecard with the data for this tract
+      // might have to make a call to the server to render the scorecard
+
+      // might not need this
+      let geoid = e.target.options.geoid;
+      let spiForTract = [];
+      spi.records.forEach(record => {
+        debugger;
+        if (record[1] === geoid) {
+          spiForTract.push(record);
+        }
+      });
+      console.log(spiForTract);
+     
+
+
+
+
+      // create the scorecard here using jquery
+      // create scorecard element
+      // need aspects for scorecard
+      // get aspects from db
+      // render scorecard with headings from each aspect
+      fetch("/getSPIAspects").then(function (response) {
+        return response.json();
+      }).then(function (json) {
+
+        let hierarchy = {
+          "Social Progress Index": [],
+          "aspects": [{
+            "Basic Human Needs": [],
+            "aspects": [{
+              "Nutrition and Basic Medical Care": [],
+              "aspects": []
+            },
+            {
+              "Water and Sanitation": [],
+              "aspects": []
+            },
+            {
+              "Shelter": [],
+              "aspects": []
+            },
+            {
+              "Personal Safety": [],
+              "aspects": []
+            }
+            ]
+          },
+          {
+            "Foundations of Wellbeing": [],
+            "aspects": [{
+              "Health and Wellness": [],
+              "aspects": []
+            },
+            {
+              "Access to Basic Knowledge": [],
+              "aspects": []
+            },
+            {
+              "Access to Information and Communications": [],
+              "aspects": []
+            },
+            {
+              "Environmental Quality": [],
+              "aspects": []
+            }
+            ]
+          },
+          {
+            "Opportunity": [],
+            "aspects": [{
+              "Personal Rights": [],
+              "aspects": []
+            },
+            {
+              "Personal Freedom and Choice": [],
+              "aspects": []
+            },
+            {
+              "Inclusiveness": [],
+              "aspects": []
+            },
+            {
+              "Access to Advanced Education": [],
+              "aspects": []
+            }
+            ]
+          }
+          ]
+        };
+
+        // populate data structure above with aspects
+        json.records.forEach(item => {
+          if (item[2] === "Nutrition and Basic Medical Care") {
+            hierarchy.aspects[0].aspects[0].aspects.push(item);
+          } else if (item[2] === "Water and Sanitation") {
+            hierarchy.aspects[0].aspects[1].aspects.push(item);
+          } else if (item[2] === "Shelter") {
+            hierarchy.aspects[0].aspects[2].aspects.push(item);
+          } else if (item[2] === "Personal Safety") {
+            hierarchy.aspects[0].aspects[3].aspects.push(item);
+          }
+
+
+          if (item[2] === "Health and Wellness") {
+            hierarchy.aspects[1].aspects[0].aspects.push(item);
+          } else if (item[2] === "Access to Basic Knowledge") {
+            hierarchy.aspects[1].aspects[1].aspects.push(item);
+          } else if (item[2] === "Access to Information and Communications") {
+            hierarchy.aspects[1].aspects[2].aspects.push(item);
+          } else if (item[2] === "Environmental Quality") {
+            hierarchy.aspects[1].aspects[3].aspects.push(item);
+          }
+
+
+          if (item[2] === "Personal Rights") {
+            hierarchy.aspects[2].aspects[0].aspects.push(item);
+          } else if (item[2] === "Personal Freedom and Choice") {
+            hierarchy.aspects[2].aspects[1].aspects.push(item);
+          } else if (item[2] === "Inclusiveness") {
+            hierarchy.aspects[2].aspects[2].aspects.push(item);
+          } else if (item[2] === "Access to Advanced Education") {
+            hierarchy.aspects[2].aspects[3].aspects.push(item);
+          }
+
+        });
+
+        // populate subaspects
+        // need to find the place where the item's description matches the desciption of the aspect
+        // in the hierarchy
+
+        let topLevelAspect = (dataForAspect, obj) => {
+          if (dataForAspect[2] === 'Social Progress Index') {
+            obj[dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Basic Human Needs') {
+            obj.aspects[0][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Foundations of Wellbeing') {
+            obj.aspects[1][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Opportunity') {
+            obj.aspects[2][dataForAspect[2]] = dataForAspect;
+          }
+        }
+
+        let midLevelAspect = (dataForAspect, obj) => {
+          if (dataForAspect[2] === 'Nutrition and Basic Medical Care') {
+            obj.aspects[0].aspects[0][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Water and Sanitation') {
+            obj.aspects[0].aspects[1][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Shelter') {
+            obj.aspects[0].aspects[2][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Personal Safety') {
+            obj.aspects[0].aspects[3][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Health and Wellness') {
+            obj.aspects[1].aspects[0][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Access to Basic Knowledge') {
+            obj.aspects[1].aspects[1][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Access to Information and Communications') {
+            obj.aspects[1].aspects[2][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Environmental Quality') {
+            obj.aspects[1].aspects[3][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Personal Rights') {
+            obj.aspects[2].aspects[0][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Personal Freedom and Choice') {
+            obj.aspects[2].aspects[1][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Inclusiveness') {
+            obj.aspects[2].aspects[2][dataForAspect[2]] = dataForAspect;
+          }
+          if (dataForAspect[2] === 'Access to Advanced Education') {
+            obj.aspects[2].aspects[3][dataForAspect[2]] = dataForAspect;
+          }
+        }
+
+
+
+        let lowLevelAspectBasicHumanNeeds = (dataForAspect) => {
+          if (dataForAspect[2] === "Dental Care Visits (% of adults)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[0].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[0].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Preventative Care Visits (% of adults)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[0].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[0].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Supermarket access (% of pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[0].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[0].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Household Water Issues (rate per 10,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[1].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[1].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Food Establishment Inspections") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[1].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[1].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Sewer Issues (rate per 10,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[1].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[1].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Housing Overcrowding (% of households)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[2].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[2].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Housing Cost Burden (% of households, owners)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[2].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[2].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Housing Cost Burden (% of households, renters)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[2].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[2].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Vacant Housing Units (% of total housing units)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[2].aspects[3],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[2].aspects[3] = aspectWithSource;
+          }
+
+
+          if (dataForAspect[2] === "Building and Vehicle Fires (rate per 1,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[3].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[3].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Motor Vehicle Accidents (rate per 1,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[3].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[3].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Property Crime Rate (per 100,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[3].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[3].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Violent Crime Rate (per 100,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[0].aspects[3].aspects[3],
+              data: dataForAspect
+            }
+            hierarchy.aspects[0].aspects[3].aspects[3] = aspectWithSource;
+          }
+        }
+
+
+        let lowLevelAspectFoundationsofWellbeing = (dataForAspect) => {
+          if (dataForAspect[2] === "Diabetes Prevalence (% of adults)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[0].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[0].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Coronary Heart Disease (% of adults)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[0].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[0].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "HIV Prevalence Rate (per 100,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[0].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[0].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Poor Mental Health Days") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[0].aspects[3],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[0].aspects[3] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Obesity Prevalence (% of adults)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[0].aspects[4],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[0].aspects[4] = aspectWithSource;
+          }
+
+          if (dataForAspect[2] === "3rd Grade MAAP Language Arts") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[1].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[1].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "8th Grade MAAP Mathematics") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[1].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[1].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Population without high school education (% of pop. ages 18-24)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[1].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[1].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Population with less than 9th grade education (% of pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[1].aspects[3],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[1].aspects[3] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Preschool Enrollment (% of 3 & 4 year olds)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[1].aspects[4],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[1].aspects[4] = aspectWithSource;
+          }
+
+
+          if (dataForAspect[2] === "Broadband Subscription (% of pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[2].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[2].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Cellular Data Subscription (% of pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[2].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[2].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "No Internet Access (% of pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[2].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[2].aspects[2] = aspectWithSource;
+          }
+
+          if (dataForAspect[2] === "Brush & Trash Fires (rate per 1,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[3].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[3].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Population in High Risk Flood Zones (% of pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[3].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[3].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Illegal Dumping (rate per 10,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[3].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[3].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Oil & Gas Spills or Leaks (rate per 1,000 pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[3].aspects[3],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[3].aspects[3] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Tree Canopy (% of land)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[1].aspects[3].aspects[4],
+              data: dataForAspect
+            }
+            hierarchy.aspects[1].aspects[3].aspects[4] = aspectWithSource;
+          }
+        }
+
+
+
+
+        let lowLevelAspectOpprtunity = (dataForAspect) => {
+          if (dataForAspect[2] === "Home Ownership (% of households)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[0].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[0].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Voter Turnout (% of voting eligible pop.)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[0].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[0].aspects[1] = aspectWithSource;
+          }
+
+          if (dataForAspect[2] === "Alternative Transportation Usage (% of commuters)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[1].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[1].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Child Care Deserts") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[1].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[1].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Disconnected Youth (% of 16-19 year olds)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[1].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[1].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Walkability Index") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[1].aspects[3],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[1].aspects[3] = aspectWithSource;
+          }
+
+
+          if (dataForAspect[2] === "Gender Pay Gap") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[2].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[2].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Residential Isolation (Non-white|white)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[2].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[2].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Racial Pay Gap") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[2].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[2].aspects[2] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Residential Segregation (Non-white|white)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[2].aspects[3],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[2].aspects[3] = aspectWithSource;
+          }
+
+
+          if (dataForAspect[2] === "Associates Degree Holders (% of pop. age 25+)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[3].aspects[0],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[3].aspects[0] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Bachelors Degree Holders (% of pop. age 25+)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[3].aspects[1],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[3].aspects[1] = aspectWithSource;
+          }
+          if (dataForAspect[2] === "Advanced Degree Holders (% of pop. age 25+)") {
+            let aspectWithSource = {
+              aspectWithSource: hierarchy.aspects[2].aspects[3].aspects[2],
+              data: dataForAspect
+            }
+            hierarchy.aspects[2].aspects[3].aspects[2] = aspectWithSource;
+          }
+
+
+        }
+
+
+
+        // original plan
+        // add aspects individually to hierarcy
+        spiForTract.forEach(item => {
+          topLevelAspect(item, hierarchy);
+          midLevelAspect(item, hierarchy);
+          lowLevelAspectBasicHumanNeeds(item);
+          lowLevelAspectFoundationsofWellbeing(item);
+          lowLevelAspectOpprtunity(item);
+        });
+
+
+        const deepCopyFunction = (inObject) => {
+          let outObject, value, key;
+
+          if (typeof inObject !== "object" || inObject === null) {
+            return inObject // Return the value if inObject is not an object
+          }
+
+          // Create an array or object to hold the values
+          outObject = Array.isArray(inObject) ? [] : {}
+
+          for (key in inObject) {
+            value = inObject[key]
+
+            // Recursively (deep) copy for nested objects, including arrays
+            outObject[key] = deepCopyFunction(value);
+          }
+
+          return outObject
+        }
+
+        // create a new hierarchy object based on spi for tract not hard coded
+        let dynamicHierarchyforTract = deepCopyFunction(dynamicHierarchy);
+        spiForTract.forEach(item => {
+
+          // in here find out how to link up current item with item in hierarchy
+          // should write helper function to do that
+          // iterate over dynamichierarchy
+
+          if (item[2] === 'Social Progress Index') {
+            dynamicHierarchyforTract['Social Progress Index'] = item;
+          } else {
+            for (let i = 0; i < dynamicHierarchyforTract.aspects.length; i++) {
+              if (dynamicHierarchyforTract.aspects[i].hasOwnProperty(item[2])) {
+                dynamicHierarchyforTract.aspects[i][item[2]] = item;
+              }
+              for (let j = 0; j < dynamicHierarchyforTract.aspects[i].aspects.length; j++) {
+                if (dynamicHierarchyforTract.aspects[i].aspects[j].hasOwnProperty(item[2])) {
+                  dynamicHierarchyforTract.aspects[i].aspects[j][item[2]] = item;
+                }
+                for (let k = 0; k < dynamicHierarchyforTract.aspects[i].aspects[j].aspects
+                  .length; k++) {
+                  // debugger;
+                  if (dynamicHierarchyforTract.aspects[i].aspects[j].aspects[k][3] === item[2]) {
+                    let aspectWithSource = {
+                      aspectWithSource: dynamicHierarchyforTract.aspects[i].aspects[j].aspects[k],
+                      data: item
+                    }
+                    dynamicHierarchyforTract.aspects[i].aspects[j].aspects[k] = aspectWithSource;
+                  }
+                }
+              }
+            }
+          }
+
+          // for each key, check if item[2] is the same string as the key
+          // if it is reassign the current property to an object similar to:
+          // let aspectWithSource = {aspectWithSource: hierarchy.aspects[2].aspects[3].aspects[2], data:dataForAspect}
+          // hierarchy.aspects[2].aspects[3].aspects[2] = aspectWithSource;
+
+
+
+        });
+        // this line here should make this dynamic!!
+        hierarchy = dynamicHierarchyforTract;
+
+
+
+        function convertMeasureToSvg(measure, header) {
+          // write function to allow for svg creation for header or inline svg. Current svg's are inline
+          // if (header) debugger;
+          let svgDimenions = header ? "45" : "26";
+          let circleXY = header ? "20" : "13";
+          let r = header ? "15" : "7";
+
+
+          let dictionary = {
+            'Very Overperforming': `<svg height=${svgDimenions} width=${svgDimenions}><circle cx=${circleXY} cy=${circleXY} r=${r} stroke="#3e8ace" stroke-width="5" fill="#3e8ace"/></svg>`,
+            'Overperforming': `<svg height=${svgDimenions} width=${svgDimenions}><circle cx=${circleXY} cy=${circleXY} r=${r} stroke="#3e8ace" stroke-width="5" fill="white"/></svg>`,
+            'Expected': `<svg height= ${svgDimenions} width=${svgDimenions}><circle cx=${circleXY} cy=${circleXY} r=${r} stroke="#ffe479" stroke-width="5" fill="#ffe479"/></svg>`,
+            'Underperforming': `<svg height=${svgDimenions} width=${svgDimenions}><circle cx=${circleXY} cy=${circleXY} r=${r} stroke="#ec786a" stroke-width="5" fill="white"/></svg>`,
+            'Very Underperforming': `<svg height=${svgDimenions} width=${svgDimenions}><circle cx=${circleXY} cy=${circleXY} r=${r} stroke="#ec786a" stroke-width="5" fill="#ec786a"/></svg>`,
+            'no data': `<svg height=${svgDimenions} width=${svgDimenions}><circle cx=${circleXY} cy=${circleXY} r=${r} stroke="grey" stroke-width="5" fill="grey"/></svg>`
+          }
+          return dictionary[measure];
+        }
+        $('#exampleModal').modal('show');
+
+        function removeDecimal(str) {
+          return str.split('.')[0]
+        }
+
+
+
+
+
+        // populate top header with correct GDP info
+        let censusTractName = e.target.options["SZONE_NAME"];
+        let geographyInfo = e.target.options.geographyData;
+        $(".scorecard-header-name h2 span").text(censusTractName)
+        $(".spi-score").text(removeDecimal(String(hierarchy["Social Progress Index"][3])));
+        $(".spi-rank").text(`${hierarchy["Social Progress Index"][4]} / ${totalTracts}`);
+        $(".geography-score").text(styleIncome(removeDecimal(String(geographyInfo[3]))));
+        $(".geography-rank").text(`${geographyInfo[0]} / ${totalTracts}`);
+        $(".spi-measure-header").html('');
+        $(".spi-measure-header").html(convertMeasureToSvg(hierarchy["Social Progress Index"][5], true));
+        // I'm currently not updating
+
+
+        // iterate over the hierarchy and add a new detail component for each indicator
+        // first iterate over the top headers and populate those with data from properties
+        let scorecardDetail = $('.scorecard-detail');
+        let dimensionValues = $('.scorecard-dimension-values.dimension-header', scorecardDetail)
+
+
+        hierarchy.aspects.forEach((item, index) => {
+
+          // need to populate each top level dimension with the data from that dimension
+          if (index === 0) {
+            let aspects = item.aspects;
+            let spans = $(`[data-aspect="Basic Human Needs"] span`);
+            // let spans = $(' span', aspectDiv);
+            $(spans[1]).text(removeDecimal(String(item["Basic Human Needs"][3])));
+            $(spans[2]).text(item["Basic Human Needs"][4]);
+            $(spans[3]).html(convertMeasureToSvg(item["Basic Human Needs"][5]));
+            // iterate over aspects and create sub categories for each aspect.
+            aspects.forEach(aspect => {
+              let aspectName = Object.keys(aspect)[0];
+              // let ul = $('<ul class="detail-scorecard-component bhn-component "></ul>');
+              let ul = $(`ul[data-aspect="${aspectName}"]`);
+              ul.html('');
+              let li = $('<li class="scorecard-dimension-values detail-data"></li>')
+              let aspectNameContainer = $(
+                '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+              let aspectDataContainer = $(
+                '<span class="detail--data-score detail--score-card-dimension-value"></span>')
+              let aspectRankContainer = $(
+                '<span class="scorecard-dimension-value data-measure"></span>')
+              let aspectMeasureContainer = $(
+                '<span class="scorecard-dimension-value data-measure"></span>')
+              aspectNameContainer.text(aspectName);
+              aspectDataContainer.text(removeDecimal(String(aspect[aspectName][3])));
+              aspectRankContainer.text(aspect[aspectName][4]);
+              aspectMeasureContainer.html(convertMeasureToSvg(aspect[aspectName][5]));
+              aspectNameContainer.appendTo(li);
+              aspectDataContainer.appendTo(li);
+              aspectRankContainer.appendTo(li);
+              aspectMeasureContainer.appendTo(li);
+              li.appendTo(ul);
+
+              // iterate over indicators and create an indicator div and populate with data from each indicator
+              aspect.aspects.forEach((item, index) => {
+                if (item.data) {
+                  let aspectName = item.data[2];
+                  let indicatorLi = $(
+                    '<li class="scorecard-dimension-values detail-data detail-data-indicator"></li>'
+                  )
+                  let aspectNameContainer = $(
+                    '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+                  let aspectDataContainer = $(
+                    '<span class="detail--data-score detail--score-card-dimension-value"></span>'
+                  )
+                  let aspectRankContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  let aspectMeasureContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  aspectNameContainer.text(aspectName);
+                  aspectDataContainer.text(item.data[3].toFixed(1));
+                  aspectRankContainer.text(item.data[4]);
+                  aspectMeasureContainer.html(convertMeasureToSvg(item.data[5]));
+                  aspectNameContainer.appendTo(indicatorLi);
+                  aspectDataContainer.appendTo(indicatorLi);
+                  aspectRankContainer.appendTo(indicatorLi);
+                  aspectMeasureContainer.appendTo(indicatorLi);
+                  indicatorLi.appendTo(ul);
+                } else {
+                  let aspectName = item[3];
+                  let indicatorLi = $(
+                    '<li class="scorecard-dimension-values detail-data detail-data-indicator"></li>'
+                  )
+                  let aspectNameContainer = $(
+                    '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+                  let aspectDataContainer = $(
+                    '<span class="detail--data-score detail--score-card-dimension-value">N/A</span>'
+                  )
+                  let aspectRankContainer = $(
+                    '<span class="scorecard-dimension-value data-measure">N/A</span>')
+                  let aspectMeasureContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  aspectNameContainer.text(aspectName);
+                  aspectMeasureContainer.html(convertMeasureToSvg("no data"));
+                  aspectNameContainer.appendTo(indicatorLi);
+                  aspectDataContainer.appendTo(indicatorLi);
+                  aspectRankContainer.appendTo(indicatorLi);
+                  aspectMeasureContainer.appendTo(indicatorLi);
+                  indicatorLi.appendTo(ul);
+                }
+              });
+              // ul.appendTo($('.scorecard-grid'));
+            });
+          } else if (item["Foundations of Wellbeing"]) {
+            let aspects = item.aspects;
+            let spans = $(`[data-aspect="Foundations of Wellbeing"] span`);
+            $(spans[1]).text(removeDecimal(String(item["Foundations of Wellbeing"][3])));
+            $(spans[2]).text(item["Foundations of Wellbeing"][4]);
+            $(spans[3]).html(convertMeasureToSvg(item["Foundations of Wellbeing"][5]));
+            aspects.forEach(aspect => {
+              let aspectName = Object.keys(aspect)[0];
+              let ul = $(`ul[data-aspect="${aspectName}"]`);
+
+              ul.html('');
+              let li = $('<li class="scorecard-dimension-values detail-data"></li>')
+              let aspectNameContainer = $(
+                '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+              let aspectDataContainer = $(
+                '<span class="detail--data-score detail--score-card-dimension-value"></span>')
+              let aspectRankContainer = $(
+                '<span class="scorecard-dimension-value data-measure"></span>')
+              let aspectMeasureContainer = $(
+                '<span class="scorecard-dimension-value data-measure"></span>')
+              aspectNameContainer.text(aspectName);
+              aspectDataContainer.text(removeDecimal(String(aspect[aspectName][3])));
+              aspectRankContainer.text(aspect[aspectName][4]);
+              aspectMeasureContainer.html(convertMeasureToSvg(aspect[aspectName][5]));
+              aspectNameContainer.appendTo(li);
+              aspectDataContainer.appendTo(li);
+              aspectRankContainer.appendTo(li);
+              aspectMeasureContainer.appendTo(li);
+              li.appendTo(ul);
+              aspect.aspects.forEach((item, index) => {
+                if (item.data) {
+                  let aspectName = item.data[2];
+                  let indicatorLi = $(
+                    '<li class="scorecard-dimension-values detail-data detail-data-indicator"></li>'
+                  )
+                  let aspectNameContainer = $(
+                    '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+                  let aspectDataContainer = $(
+                    '<span class="detail--data-score detail--score-card-dimension-value"></span>'
+                  )
+                  let aspectRankContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  let aspectMeasureContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  aspectNameContainer.text(aspectName);
+                  aspectDataContainer.text(item.data[3].toFixed(1));
+                  aspectRankContainer.text(item.data[4]);
+                  aspectMeasureContainer.html(convertMeasureToSvg(item.data[5]));
+                  aspectNameContainer.appendTo(indicatorLi);
+                  aspectDataContainer.appendTo(indicatorLi);
+                  aspectRankContainer.appendTo(indicatorLi);
+                  aspectMeasureContainer.appendTo(indicatorLi);
+                  indicatorLi.appendTo(ul);
+                } else {
+                  let aspectName = item[3];
+                  let indicatorLi = $(
+                    '<li class="scorecard-dimension-values detail-data detail-data-indicator"></li>'
+                  )
+                  let aspectNameContainer = $(
+                    '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+                  let aspectDataContainer = $(
+                    '<span class="detail--data-score detail--score-card-dimension-value">N/A</span>'
+                  )
+                  let aspectRankContainer = $(
+                    '<span class="scorecard-dimension-value data-measure">N/A</span>')
+                  let aspectMeasureContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  aspectNameContainer.text(aspectName);
+                  aspectMeasureContainer.html(convertMeasureToSvg("no data"));
+                  aspectNameContainer.appendTo(indicatorLi);
+                  aspectDataContainer.appendTo(indicatorLi);
+                  aspectRankContainer.appendTo(indicatorLi);
+                  aspectMeasureContainer.appendTo(indicatorLi);
+                  indicatorLi.appendTo(ul);
+                }
+              });
+            });
+          } else if (item["Opportunity"]) {
+            let scorecardAspectOPP = $('.scorecard-dimension-opp')
+            let aspects = item.aspects;
+            let spans = $(`[data-aspect="Opportunity"] span`);
+            $(spans[1]).text(removeDecimal(String(item["Opportunity"][3])));
+            $(spans[2]).text(item["Opportunity"][4]);
+            $(spans[3]).html(convertMeasureToSvg(item["Opportunity"][5]));
+            scorecardAspectOPP.html('');
+            aspects.forEach(aspect => {
+              let aspectName = Object.keys(aspect)[0];
+              let ul = $(`ul[data-aspect="${aspectName}"]`);
+              ul.html('');
+              let li = $('<li class="scorecard-dimension-values detail-data"></li>')
+              let aspectNameContainer = $(
+                '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+              let aspectDataContainer = $(
+                '<span class="detail--data-score detail--score-card-dimension-value"></span>')
+              let aspectRankContainer = $(
+                '<span class="scorecard-dimension-value data-measure"></span>')
+              let aspectMeasureContainer = $(
+                '<span class="scorecard-dimension-value data-measure"></span>')
+              aspectNameContainer.text(aspectName);
+              aspectDataContainer.text(removeDecimal(String(aspect[aspectName][3])));
+              aspectRankContainer.text(aspect[aspectName][4]);
+              aspectMeasureContainer.html(convertMeasureToSvg(aspect[aspectName][5]));
+              aspectNameContainer.appendTo(li);
+              aspectDataContainer.appendTo(li);
+              aspectRankContainer.appendTo(li);
+              aspectMeasureContainer.appendTo(li);
+              li.appendTo(ul);
+              aspect.aspects.forEach((item, index) => {
+                if (item.data) {
+                  let aspectName = item.data[2];
+                  let indicatorLi = $(
+                    '<li class="scorecard-dimension-values detail-data detail-data-indicator"></li>'
+                  )
+                  let aspectNameContainer = $(
+                    '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+                  let aspectDataContainer = $(
+                    '<span class="detail--data-score detail--score-card-dimension-value"></span>'
+                  )
+                  let aspectRankContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  let aspectMeasureContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  aspectNameContainer.text(aspectName);
+                  aspectDataContainer.text(item.data[3].toFixed(1));
+                  aspectRankContainer.text(item.data[4]);
+                  aspectMeasureContainer.html(convertMeasureToSvg(item.data[5]));
+                  aspectNameContainer.appendTo(indicatorLi);
+                  aspectDataContainer.appendTo(indicatorLi);
+                  aspectRankContainer.appendTo(indicatorLi);
+                  aspectMeasureContainer.appendTo(indicatorLi);
+                  indicatorLi.appendTo(ul);
+                } else {
+                  let aspectName = item[3];
+                  let indicatorLi = $(
+                    '<li class="scorecard-dimension-values detail-data detail-data-indicator"></li>'
+                  )
+                  let aspectNameContainer = $(
+                    '<span class="scorecard-dimension-value-name detail-data-label"></span>')
+                  let aspectDataContainer = $(
+                    '<span class="detail--data-score detail--score-card-dimension-value">N/A</span>'
+                  )
+                  let aspectRankContainer = $(
+                    '<span class="scorecard-dimension-value data-measure">N/A</span>')
+                  let aspectMeasureContainer = $(
+                    '<span class="scorecard-dimension-value data-measure"></span>')
+                  aspectNameContainer.text(aspectName);
+                  aspectMeasureContainer.html(convertMeasureToSvg("no data"));
+                  aspectNameContainer.appendTo(indicatorLi);
+                  aspectDataContainer.appendTo(indicatorLi);
+                  aspectRankContainer.appendTo(indicatorLi);
+                  aspectMeasureContainer.appendTo(indicatorLi);
+                  indicatorLi.appendTo(ul);
+                }
+              });
+              // ul.appendTo(scorecardAspectOPP);
+            });
+          }
+        });
+
+
+      });
+    });
+
+  });
+
+
+  let min = {
+    rank: -Infinity,
+    value: 0
+  };
+  let max = {
+    rank: Infinity,
+    value: 0
+  };
+  let spiString = 'Social Progress Index'
+  shapes.forEach(shape => {
+    // let color = shape.options[data.node.text] ? getColor(shape.options[data.node.text][3]) : 'grey';
+    // let style = shape.options.style;
+    // style.fillColor = color;
+    // shape.setStyle(style);
+    if (shape.options[spiString] !== undefined) {
+      if (shape.options[spiString][4] > min.rank) {
+        min.rank = shape.options[spiString][4];
+        min.value = shape.options[spiString][3];
+      }
+      if (shape.options[spiString][4] < max.rank) {
+        max.rank = shape.options[spiString][4];
+        max.value = shape.options[spiString][3];
+      }
+    }
+  });
+  let scaleSPI = d3.scaleLinear()
+    .domain([Math.round(min.value), Math.round(max.value)])
+    .range(["red", "blue"]);
+  let scaleReverseSPI = d3.scaleLinear()
+    .domain([Math.round(max.value), Math.round(min.value)])
+    .range(["red", "blue"]);
+
+
+  const tractsWithData = shapes.filter(shape => tractsSet.has(shape.options.geoid)).map(shape => shape.options);
+  console.log('what is this', tractsWithData);
+  const headings = ['Rank', 'Social Progress Index', 'Name', 'Income', 'Basic Human Needs', 'Foundations of Wellbeing',
+    'Opportunity'
+  ];
+
+  function getValue(tract, heading) {
+    const tableDataDictionary = {
+      'Social Progress Index': Math.round(tract['Social Progress Index'][3]),
+      'Rank': tract['Social Progress Index'][4],
+      'Name': `Census Tract ${tract['SZONE_NAME']}`,
+      'Income': styleIncome(tract['geographyData'][3]),
+      'Basic Human Needs': Math.round(tract['Basic Human Needs'][3]),
+      'Foundations of Wellbeing': Math.round(tract['Foundations of Wellbeing'][3]),
+      'Opportunity': Math.round(tract['Opportunity'][3])
+    }
+    return tableDataDictionary[heading];
+  }
+
+  const $tableBody = $('#compare-body');
+  tractsWithData.forEach(tract => {
+    let $row = $('<tr></tr>');
+    headings.forEach(heading => {
+      let $tr = $('<td></td>');
+      $tr.text(getValue(tract, heading));
+      $tr.appendTo($row);
+    });
+    $row.appendTo($tableBody);
+  });
+  $('#example').DataTable({
+    pageLength: 100
+  });
+
+  // in order to use this I need to create table element
+  let compareLink = $('#compare-link');
+  let mapLink = $('#map-link');
+  // grab li elements on links
+  let mapLinkContainer = $(`#map-link-container`);
+  let compareLinkContainer = $(`#compare-link-container`);
+  let aboutLinkContainer = $(`#about-link-container`);
+  let aboutTable = $(`#about-table`);
+
+
+  compareLink.click(e => {
+    e.preventDefault();
+    if (mapLinkContainer.hasClass('active')) {
+      mapLinkContainer.removeClass('active');
+    }
+    if (aboutLinkContainer.hasClass('active')) {
+      aboutLinkContainer.removeClass('active');
+    }
+
+    if (!compareLinkContainer.hasClass('active')) {
+      compareLinkContainer.addClass('active');
+    }
+    $('#map').addClass('hidden');
+    $('#tree-wrapper').addClass('hidden');
+    $('#table').removeClass('hidden');
+    $('#about').addClass('hidden');
+
+    $('body').css('overflow', 'scroll');
+  });
+
+  mapLink.click(e => {
+    e.preventDefault();
+    if (!mapLinkContainer.hasClass('active')) {
+      mapLinkContainer.addClass('active');
+    }
+    if (aboutLinkContainer.hasClass('active')) {
+      aboutLinkContainer.removeClass('active');
+    }
+
+    if (compareLinkContainer.hasClass('active')) {
+      compareLinkContainer.removeClass('active');
+    }
+    // show the map/js tree
+    $('#map').removeClass('hidden');
+    $('#tree-wrapper').removeClass('hidden');
+    $('#table').addClass('hidden');
+    $('#about').addClass('hidden');
+    $('body').css('overflow', 'hidden');
+  });
+
+  aboutLinkContainer.click(e => {
+    e.preventDefault();
+    if (mapLinkContainer.hasClass('active')) {
+      mapLinkContainer.removeClass('active');
+    }
+    if (!aboutLinkContainer.hasClass('active')) {
+      aboutLinkContainer.addClass('active');
+    }
+    if (compareLinkContainer.hasClass('active')) {
+      compareLinkContainer.removeClass('active');
+    }
+
+    if ($('#about-table tbody').children().length === 0) {
+      aspectsFromServer.records.forEach(aspect => {
+        let tr = $(
+          `<tr><td>${aspect[2]}</td><td>${aspect[3]}</td><td>${aspect[4]}</td><td><a href="${aspect[7]}">${aspect[6]}</a></td></tr>`
+        );
+        tr.appendTo(aboutTable);
+      });
+    }
+
+
+
+
+    $('#map').addClass('hidden');
+    $('#tree-wrapper').addClass('hidden');
+    $('#table').addClass('hidden');
+    $('#about').removeClass('hidden');
+
+    $('body').css('overflow', 'scroll');
+  });
+
+  shapes.forEach(shape => {
+    let color = shape.options[spiString] ? scaleSPI(shape.options[spiString][3]) : 'grey';
+    let style = shape.options.style;
+    style.fillColor = color;
+    shape.setStyle(style);
+  });
+
+  let legend = L.control({
+    position: 'topleft'
+  });
+  legend.onAdd = function (map) {
+
+    // range defining color scale itself
+    // domain is htei noput, what can we feed into the color scale
+
+    let div = L.DomUtil.create('div', 'info legend');
+    // get interval and increment by interal in for loop
+    // start at min and get to max
+    // if max is less than min figure it out
+
+    div.innerHTML += `<strong class="legend-aspect-name">${createLineBreaksForLegend(spiString)}</strong>`;
+
+    // if min is greater than max
+    let minLessThanMax = min.value < max.value;
+    // find absolute value of difference between min and max
+    let interval = Math.abs(Math.floor((max.value - min.value) / 6));
+    // do the for loop but switch min and max and subtract interval
+
+    if (minLessThanMax) {
+      // loop through our density intervals and generate a label with a colored square for each interval
+      for (var i = Math.round(min.value); i < Math.round(max.value); i += interval) {
+        div.innerHTML += '<div class="legend-container">' +
+          '<i style="background:' + scaleSPI(i) + '"></i>  ' +
+          i + '<br>' + '</div>';
+      }
+    } else {
+      for (var i = Math.round(min.value); i > Math.round(max.value); i -= interval) {
+        div.innerHTML += '<div class="legend-container">' +
+          '<i style="background:' + scaleReverseSPI(i) + '"></i>  ' +
+          i + '<br>' + '</div>';
+      }
+    }
+    return div;
+  }
+
+  legend.addTo(map);
+
+
+  // update legend and shapes
+
+</script>
