@@ -134,7 +134,6 @@ app.get("/", function (req, res) {
                   "https://data.socialprogress.org/datastore/dump/0e7c129f-b10a-40c2-8673-6a3ed291932b?format=json"
                 )
                 .then((aspects) => {
-                  console.log(aspects);
 
                   // res.json(aspects);
                   res.render("pages/index", {

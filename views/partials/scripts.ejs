@@ -22,7 +22,7 @@
   let spi = <%- JSON.stringify(spi) %> ;
   let myLines2 = geoJSON.features;
   let aspectsFromServer = <%- JSON.stringify(spiAspects) %> ;
-  console.log(myLines2);
+  console.log(geography);
 
   // based on the above pieces of data I need to create a DYNAMIC hierarchy
 
@@ -300,8 +300,11 @@
 
 
   function styleIncome(string) {
+    if (typeof string === 'string' && string.indexOf(',') > -1) {
+      return string;
+    }
     if (typeof string !== 'string') string = string.toString();
-    let incomeString = '$';
+    let incomeString = '';
     for (let i = 0; i < string.length; i++) {
       if ((string.length - i) % 3 === 0 && i > 0 && i < string.length - 2) {
         incomeString += ',';
@@ -658,7 +661,6 @@
       let geoid = e.target.options.geoid;
       let spiForTract = [];
       spi.records.forEach(record => {
-        debugger;
         if (record[1] === geoid) {
           spiForTract.push(record);
         }
@@ -1289,9 +1291,10 @@
 
 
         // populate top header with correct GDP info
-        let censusTractName = e.target.options["SZONE_NAME"];
+        let censusTractName = e.target.options.name;
+        debugger;
         let geographyInfo = e.target.options.geographyData;
-        $(".scorecard-header-name h2 span").text(censusTractName)
+        $(".scorecard-header-name h2 span").text(censusTractName);
         $(".spi-score").text(removeDecimal(String(hierarchy["Social Progress Index"][3])));
         $(".spi-rank").text(`${hierarchy["Social Progress Index"][4]} / ${totalTracts}`);
         $(".geography-score").text(styleIncome(removeDecimal(String(geographyInfo[3]))));
@@ -1601,7 +1604,7 @@
     const tableDataDictionary = {
       'Social Progress Index': Math.round(tract['Social Progress Index'][3]),
       'Rank': tract['Social Progress Index'][4],
-      'Name': `Census Tract ${tract['SZONE_NAME']}`,
+      'Name': `${tract.name}`,
       'Income': styleIncome(tract['geographyData'][3]),
       'Basic Human Needs': Math.round(tract['Basic Human Needs'][3]),
       'Foundations of Wellbeing': Math.round(tract['Foundations of Wellbeing'][3]),
@@ -1689,7 +1692,7 @@
     if ($('#about-table tbody').children().length === 0) {
       aspectsFromServer.records.forEach(aspect => {
         let tr = $(
-          `<tr><td>${aspect[2]}</td><td>${aspect[3]}</td><td>${aspect[4]}</td><td><a href="${aspect[7]}">${aspect[6]}</a></td></tr>`
+          `<tr><td>${aspect[2]}</td><td>${aspect[3]}</td><td>${aspect[4]}</td><td><a href="${aspect[7]}" target=”blank”>${aspect[6]}</a></td></tr>`
         );
         tr.appendTo(aboutTable);
       });
