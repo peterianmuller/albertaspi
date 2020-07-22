@@ -505,6 +505,7 @@
             }
           }
         });
+        
 
         // need to deal with very small increments for min and max. For covid example, dustin just added to the range. Maybe I add some points here to the min and max
 
@@ -550,10 +551,14 @@
           // find absolute value of difference between min and max
           // for small intervals, we need to show decimal points on legend itself
           // but we'll need to cut the decimal points to two points or so
-          let smallRange = Math.abs(max.value - min.value) < 5;
+          let smallRange = Math.abs(max.value - min.value) <= 10;
+          let smallerRange = Math.abs(max.value - min.value) <= 2;
+
+          // below isn't working when min is 0.01 and max is 0 for STI rates
           let start = Math.floor(min.value);
           let end = Math.floor(max.value);
           let interval = Math.floor(Math.abs((start - end) / 6));
+          debugger;
           // if there's a small range I want to include decimal points up to two places
           if (smallRange) {
             start = Number(decimalPoints(min.value));
@@ -561,6 +566,16 @@
             interval = Number(decimalPoints(Math.abs((start - end) / 6)));
           }
 
+           if (smallerRange) {
+            start = Number(decimalPoints(min.value));
+            end = Number(decimalPoints(max.value));
+            let num = (start - end) / 6;
+            interval = Math.round((num + Number.EPSILON) * 100) / 100;
+            interval = num;
+          }
+          // debugger;
+
+          
           // interval = minLessThanMax ? -interval : interval
           // do the for loop but switch min and max and subtract interval
 
@@ -572,6 +587,7 @@
 
 
           if (minLessThanMax) {
+           
             // loop through our density intervals and generate a label with a colored square for each interval
             for (var i = start; i < end; i += interval) {
               div.innerHTML += '<div class="legend-container">' +
@@ -579,6 +595,7 @@
                 decimalPoints(i) + '<br>' + '</div>';
             }
           } else {
+             debugger;
             for (var i = start; i > end; i -= interval) {
               div.innerHTML += '<div class="legend-container">' +
                 '<i style="background:' + scaleAspect(i) + '"></i>  ' +
@@ -636,7 +653,7 @@
     var shape = L.geoJSON(feature.geometry, options);
     // on tooltip put geographical info
     shape.bindTooltip(
-      `Census Tract: ${shape.options["SZONE_NAME"]} <br> ${"Social Progress Index"}: ${shape.options["Social Progress Index"] ? shape.options["Social Progress Index"][3] : 'no data'}`
+      `Census Tract: ${shape.options.name} <br> ${"Social Progress Index"}: ${shape.options["Social Progress Index"] ? shape.options["Social Progress Index"][3] : 'no data'}`
     )
       // .bindPopup(`Census Tract: ${feature.properties.name}`)
       .addTo(map);
@@ -1292,7 +1309,6 @@
 
         // populate top header with correct GDP info
         let censusTractName = e.target.options.name;
-        debugger;
         let geographyInfo = e.target.options.geographyData;
         $(".scorecard-header-name h2 span").text(censusTractName);
         $(".spi-score").text(removeDecimal(String(hierarchy["Social Progress Index"][3])));
