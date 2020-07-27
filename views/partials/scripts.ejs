@@ -17,11 +17,11 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
 
 <script>
-  let geoJSON = <%- JSON.stringify(coords) %> ;
-  let geography = <%- JSON.stringify(geography) %> ;
-  let spi = <%- JSON.stringify(spi) %> ;
+  let geoJSON = <%- JSON.stringify(coords) %>;
+  let geography = <%- JSON.stringify(geography) %>;
+  let spi = <%- JSON.stringify(spi) %>;
   let geoJSONFeatures = geoJSON.features;
-  let aspectsFromServer = <%- JSON.stringify(spiAspects) %> ;
+  let aspectsFromServer = <%- JSON.stringify(spiAspects) %>;
 
   // hierarchial object with spi broken down into dimensions
   let dynamicHierarchy = {
