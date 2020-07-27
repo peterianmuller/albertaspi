@@ -20,14 +20,11 @@
   let geoJSON = <%- JSON.stringify(coords) %> ;
   let geography = <%- JSON.stringify(geography) %> ;
   let spi = <%- JSON.stringify(spi) %> ;
-  let myLines2 = geoJSON.features;
+  let geoJSONFeatures = geoJSON.features;
   let aspectsFromServer = <%- JSON.stringify(spiAspects) %> ;
-  console.log(geography);
 
-  // based on the above pieces of data I need to create a DYNAMIC hierarchy
-
-
-  var dynamicHierarchy = {
+  // hierarchial object with spi broken down into dimensions
+  let dynamicHierarchy = {
     "Social Progress Index": [],
     "aspects": [{
       "Basic Human Needs": [],
@@ -92,6 +89,7 @@
     ]
   };
 
+  // tree object created for cickable tree on the right of the page
   let dynamicTree = {
     'text': "Social Progress Index",
     'state': {
@@ -238,6 +236,7 @@
     ]
   }
 
+  // populating aspects that are under each of the 12 dimensions to the tree
   aspectsFromServer.records.forEach(aspect => {
     // also add to tree
     var node = {
@@ -297,7 +296,7 @@
   });
 
 
-
+  // utlity function for styling income for scorecard 
   function styleIncome(string) {
     if (typeof string === 'string' && string.indexOf(',') > -1) {
       return string;
@@ -312,35 +311,21 @@
     }
     return incomeString;
   };
-
-
+ 
+  // bottom three functions help determine total number of geographical features in map  
   const reducer = (accumulator, currentValue) => {
     accumulator.add(currentValue[1]);
     return accumulator;
   }
-
   let tractsSet = spi.records.reduce(reducer, new Set());
   let totalTracts = tractsSet.size;
 
-
-
-
-
-
-  // create hashmap for geography with key as geoid prop as ar
-  // then add this array to the options property of each feature
-  // then print to scorecard
-
+  // hashmap data structure to add geography info to each geographical feature  
   let geographyHashMap = geography.records.reduce((acc, curr) => {
     acc[curr[1]] = curr;
     return acc;
   }, {});
-
-
-
-
-
-
+  
 
   function createLineBreaksForLegend(aspectName) {
     let markup = '';
@@ -350,16 +335,16 @@
     });
     return markup;
   }
+  
+  // 
+  const map = L.map("map").setView([55.000000, -115.000000], 5);
 
-  var map = L.map("map").setView([55.000000, -115.000000], 5);
-
-  var Esri_WorldGrayCanvas = L.tileLayer(
+  let Esri_WorldGrayCanvas = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
   }).addTo(map);
 
-
-  var myStyle = {
+  let myStyle = {
     "color": "#fff",
     "opacity": 0.4,
     "width": 0.1,
@@ -367,6 +352,23 @@
     "stroke-linejoin": "round",
     "fillOpacity": 0.5
   };
+
+   function getColor(d, max, min) {
+      let sequentialScale = d3.scaleSequential()
+        .domain([0, 10])
+        .interpolator(d3.interpolateMagma);
+
+      return d > 90 ? sequentialScale(9) :
+        d > 80 ? sequentialScale(8) :
+          d > 70 ? sequentialScale(7) :
+            d > 60 ? sequentialScale(6) :
+              d > 50 ? sequentialScale(5) :
+                d > 40 ? sequentialScale(4) :
+                  d > 30 ? sequentialScale(3) :
+                    d > 20 ? sequentialScale(2) :
+                      d > 10 ? sequentialScale(1) :
+                        sequentialScale(0)
+    }
 
 
   let hierarchy = {
@@ -435,8 +437,6 @@
   };
 
 
-  // iterate over all spi and populate tree
-  // idea to create the tree
   $(function () {
     $('#spi-tree').jstree({
       'core': {
@@ -453,23 +453,6 @@
 
   let shapes = [];
 
-
-  function getColor(d, max, min) {
-    let sequentialScale = d3.scaleSequential()
-      .domain([0, 10])
-      .interpolator(d3.interpolateMagma);
-
-    return d > 90 ? sequentialScale(9) :
-      d > 80 ? sequentialScale(8) :
-        d > 70 ? sequentialScale(7) :
-          d > 60 ? sequentialScale(6) :
-            d > 50 ? sequentialScale(5) :
-              d > 40 ? sequentialScale(4) :
-                d > 30 ? sequentialScale(3) :
-                  d > 20 ? sequentialScale(2) :
-                    d > 10 ? sequentialScale(1) :
-                      sequentialScale(0)
-  }
 
 
   $('#spi-tree')
@@ -572,12 +555,8 @@
             interval = Math.round((num + Number.EPSILON) * 100) / 100;
             interval = num;
           }
-          // debugger;
-
           
-          // interval = minLessThanMax ? -interval : interval
           // do the for loop but switch min and max and subtract interval
-
           // write function to chck if small range include decimal points to two points
 
           function decimalPoints(num) {
@@ -634,9 +613,8 @@
     }
   }
 
-  // update
 
-  myLines2.forEach(feature => {
+  geoJSONFeatures.forEach(feature => {
     // grab the population data
     var tooltipPopup;
     var options = {
