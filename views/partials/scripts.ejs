@@ -296,7 +296,6 @@
     }
   });
 
-  console.log(dynamicHierarchy);
 
 
   function styleIncome(string) {
@@ -491,7 +490,7 @@
         };
         shapes.forEach(shape => {
           shape.bindTooltip(
-            `Census Tract: ${shape.options["SZONE_NAME"]} <br> ${data.node.text}: ${shape.options[data.node.text] ? shape.options[data.node.text][3] : 'no data'}`
+            `${shape.options.name} <br> ${data.node.text}: ${shape.options[data.node.text] ? shape.options[data.node.text][3] : 'no data'}`
           );
 
           if (shape.options[data.node.text] !== undefined) {
@@ -520,7 +519,7 @@
 
         shapes.forEach(shape => {
           shape.bindTooltip(
-            `Census Tract: ${shape.options["SZONE_NAME"]} <br> ${data.node.text}: ${shape.options[data.node.text] ? shape.options[data.node.text][3] : 'no data'}`
+            `${shape.options.name} <br> ${data.node.text}: ${shape.options[data.node.text] ? shape.options[data.node.text][3] : 'no data'}`
           );
           let color = shape.options[data.node.text] ? scaleAspect(shape.options[data.node.text][3]) : 'grey';
           let style = shape.options.style;
@@ -653,14 +652,12 @@
     var shape = L.geoJSON(feature.geometry, options);
     // on tooltip put geographical info
     shape.bindTooltip(
-      `Census Tract: ${shape.options.name} <br> ${"Social Progress Index"}: ${shape.options["Social Progress Index"] ? shape.options["Social Progress Index"][3] : 'no data'}`
+      `${shape.options.name} <br> ${"Social Progress Index"}: ${shape.options["Social Progress Index"] ? shape.options["Social Progress Index"][3] : 'no data'}`
     )
-      // .bindPopup(`Census Tract: ${feature.properties.name}`)
       .addTo(map);
     shapes.push(shape);
     shape.on('mouseover', function (e) {
       this.openTooltip()
-      // highlightFeature(e);
     })
     shape.on('mouseout', function (e) {
       this.closeTooltip()
@@ -1304,13 +1301,10 @@
         }
 
 
-
-
-
         // populate top header with correct GDP info
-        let censusTractName = e.target.options.name;
+        let geographyName = e.target.options.name;
         let geographyInfo = e.target.options.geographyData;
-        $(".scorecard-header-name h2 span").text(censusTractName);
+        $(".scorecard-header-name h2 span").text(geographyName);
         $(".spi-score").text(removeDecimal(String(hierarchy["Social Progress Index"][3])));
         $(".spi-rank").text(`${hierarchy["Social Progress Index"][4]} / ${totalTracts}`);
         $(".geography-score").text(styleIncome(removeDecimal(String(geographyInfo[3]))));
